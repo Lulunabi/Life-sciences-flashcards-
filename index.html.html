@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade 12 Life Sciences Flashcards</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        /* 3D Flip Card Effect Styles */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+
+        .transform-style-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .backface-hidden {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col justify-between">
+
+    <!-- Header Section -->
+    <header class="bg-emerald-700 text-white shadow-md">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-emerald-600 rounded-lg">
+                    <i data-lucide="dna" class="w-8 h-8 text-emerald-100"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold tracking-tight">Life Sciences Flashcards</h1>
+                    <p class="text-xs sm:text-sm text-emerald-100">Grade 12 CAPS Curriculum Terminology Companion</p>
+                </div>
+            </div>
+            
+            <!-- Category Selector & Manage Button -->
+            <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <button id="manage-btn" class="flex items-center gap-1.5 px-3 py-2 bg-emerald-800 hover:bg-emerald-900 rounded-lg text-xs sm:text-sm font-medium transition shadow-sm">
+                    <i data-lucide="settings" class="w-4 h-4"></i>
+                    <span>Manage Deck</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-4xl mx-auto px-4 py-6 w-full flex-grow flex flex-col justify-center">
+
+        <!-- Controls Bar: Search, Category Filter & Actions -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 space-y-4 sm:space-y-0 sm:flex sm:items-center sm:justify-between gap-4">
+            
+            <!-- Search & Filter Controls -->
+            <div class="flex flex-col sm:flex-row gap-3 flex-grow">
+                <!-- Search Box -->
+                <div class="relative flex-grow">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="search-input" placeholder="Search term or definition..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
+                </div>
+
+                <!-- Topic Selector -->
+                <select id="topic-select" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white font-medium text-slate-600">
+                    <option value="All">All Topics</option>
+                    <option value="DNA">DNA: Code of Life</option>
+                    <option value="Meiosis">Meiosis</option>
+                    <option value="Reproductive Strategies">Reproductive Strategies</option>
+                    <option value="Human Reproduction">Human Reproduction</option>
+                    <option value="Custom">Custom Added</option>
+                </select>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-2 justify-end">
+                <button id="shuffle-btn" title="Shuffle Cards" class="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition">
+                    <i data-lucide="shuffle" class="w-4 h-4"></i>
+                    <span>Shuffle</span>
+                </button>
+                <button id="reset-progress-btn" title="Reset Mastered Status" class="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-600 rounded-lg text-sm font-medium transition">
+                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    <span>Reset</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Progress Tracking Bar -->
+        <div class="mb-6 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+            <div class="flex justify-between items-center mb-2 text-xs sm:text-sm font-medium">
+                <span class="text-slate-600">Topic Mastery Progress</span>
+                <span id="progress-text" class="text-emerald-700 font-bold">0% (0 / 0 Mastered)</span>
+            </div>
+            <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden border border-slate-200">
+                <div id="progress-bar" class="bg-gradient-to-r from-emerald-500 to-teal-500 h-full transition-all duration-500" style="width: 0%;"></div>
+            </div>
+        </div>
+
+        <!-- Flashcard View Container -->
+        <div id="card-display-area" class="flex flex-col items-center">
+            
+            <!-- The 3D Flip Card -->
+            <div class="w-full max-w-xl h-80 sm:h-96 perspective-1000 cursor-pointer group" id="flashcard-container">
+                <div id="flashcard" class="relative w-full h-full transform-style-3d rounded-2xl shadow-md border border-slate-200/80 bg-white">
+                    
+                    <!-- FRONT OF CARD (DEFINITION) -->
+                    <div class="absolute inset-0 w-full h-full rounded-2xl bg-gradient-to-br from-white to-slate-50 p-6 sm:p-8 flex flex-col justify-between backface-hidden border-2 border-transparent group-hover:border-emerald-200 transition">
+                        <!-- Top Metadata Bar -->
+                        <div class="flex justify-between items-center">
+                            <span id="card-topic-tag" class="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-full uppercase tracking-wider truncate max-w-[220px]">
+                                Topic
+                            </span>
+                            <div class="flex items-center gap-1">
+                                <button id="tts-front-btn" title="Listen to Definition" class="p-2 text-slate-400 hover:text-emerald-600 rounded-full hover:bg-slate-100 transition">
+                                    <i data-lucide="volume-2" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Card Center Definition Content -->
+                        <div class="text-center my-auto px-2 sm:px-4 overflow-y-auto max-h-52 py-2">
+                            <p id="card-definition" class="text-base sm:text-lg leading-relaxed text-slate-800 font-medium">
+                                Detailed explanation or definition of the biological concept.
+                            </p>
+                            <p class="text-xs text-slate-400 mt-4 flex items-center justify-center gap-1">
+                                <i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5"></i> Click anywhere to reveal term
+                            </p>
+                        </div>
+
+                        <!-- Bottom Footer info -->
+                        <div class="flex justify-between items-center text-xs text-slate-400">
+                            <span id="card-counter">Card 1 of 10</span>
+                            <span id="card-status-badge" class="font-medium text-slate-500">Unmastered</span>
+                        </div>
+                    </div>
+
+                    <!-- BACK OF CARD (TERMINOLOGY) -->
+                    <div class="absolute inset-0 w-full h-full rounded-2xl bg-gradient-to-br from-emerald-900 to-teal-900 text-white p-6 sm:p-8 flex flex-col justify-between backface-hidden rotate-y-180 border-2 border-emerald-600">
+                        <!-- Top Metadata Bar -->
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-semibold text-emerald-300 uppercase tracking-wider flex items-center gap-1">
+                                <i data-lucide="key-round" class="w-3.5 h-3.5"></i> Terminology / Concept
+                            </span>
+                            <button id="tts-back-btn" title="Listen to Term" class="p-2 text-emerald-300 hover:text-white rounded-full hover:bg-emerald-800/50 transition">
+                                <i data-lucide="volume-2" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+
+                        <!-- Card Center Term Content -->
+                        <div class="text-center my-auto px-4">
+                            <p id="card-term" class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-snug">
+                                Term Name
+                            </p>
+                        </div>
+
+                        <!-- Bottom Footer info -->
+                        <div class="flex justify-center items-center text-xs text-emerald-300/80">
+                            <span>Click card to return to definition</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Navigation & Mastery Action Buttons -->
+            <div class="w-full max-w-xl mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                
+                <!-- Card Prev / Next Navigation -->
+                <div class="flex items-center gap-2 order-2 sm:order-1">
+                    <button id="prev-btn" class="p-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-700 shadow-sm transition disabled:opacity-40 disabled:cursor-not-allowed">
+                        <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                    </button>
+                    <button id="next-btn" class="p-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-700 shadow-sm transition disabled:opacity-40 disabled:cursor-not-allowed">
+                        <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <!-- Mastery Status Toggle Buttons -->
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-center order-1 sm:order-2">
+                    <button id="mark-practice-btn" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 rounded-xl font-medium text-sm transition">
+                        <i data-lucide="clock" class="w-4 h-4"></i>
+                        <span>Needs Practice</span>
+                    </button>
+                    <button id="mark-mastered-btn" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 rounded-xl font-medium text-sm transition">
+                        <i data-lucide="check-circle" class="w-4 h-4"></i>
+                        <span>Mastered</span>
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Empty State Container -->
+        <div id="empty-state" class="hidden text-center py-12 bg-white rounded-2xl border border-slate-200 shadow-sm">
+            <div class="p-4 bg-slate-100 text-slate-400 rounded-full inline-block mb-3">
+                <i data-lucide="search-x" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-700">No matching flashcards found</h3>
+            <p class="text-slate-500 text-sm mt-1">Try adjusting your search criteria or selecting a different topic category.</p>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+        <p>Grade 12 Life Sciences CAPS Study Companion</p>
+    </footer>
+
+    <!-- Management Modal -->
+    <div id="manage-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+            
+            <!-- Modal Header -->
+            <div class="p-4 sm:p-6 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="edit-3" class="w-5 h-5 text-emerald-600"></i>
+                    <h2 class="text-lg font-bold text-slate-800">Manage Deck & Custom Cards</h2>
+                </div>
+                <button id="close-modal-btn" class="p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-200 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content Area -->
+            <div class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-grow">
+                
+                <!-- Add / Edit Card Form -->
+                <form id="card-form" class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
+                    <h3 id="form-title" class="text-sm font-semibold text-slate-700 uppercase tracking-wider">Add New Flashcard</h3>
+                    <input type="hidden" id="edit-card-id" value="">
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 mb-1">Term / Concept</label>
+                            <input type="text" id="input-term" required placeholder="e.g., Transcription" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 mb-1">Topic Category</label>
+                            <select id="input-topic" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                <option value="DNA">DNA: Code of Life</option>
+                                <option value="Meiosis">Meiosis</option>
+                                <option value="Reproductive Strategies">Reproductive Strategies</option>
+                                <option value="Human Reproduction">Human Reproduction</option>
+                                <option value="Custom">Custom / General</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Definition / Explanation</label>
+                        <textarea id="input-definition" required rows="3" placeholder="Write a clear Grade 12 CAPS level definition..." class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+                    </div>
+
+                    <div class="flex justify-end gap-2">
+                        <button type="button" id="cancel-edit-btn" class="px-4 py-2 bg-slate-200 text-slate-700 hover:bg-slate-300 rounded-lg text-sm font-medium transition hidden">Cancel Edit</button>
+                        <button type="submit" id="save-card-btn" class="px-4 py-2 bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg text-sm font-medium transition flex items-center gap-1.5">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            <span>Save Flashcard</span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Current Cards List -->
+                <div>
+                    <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wider mb-3">Existing Deck Cards (<span id="total-card-count">0</span>)</h3>
+                    <div class="border border-slate-200 rounded-xl overflow-hidden max-h-60 overflow-y-auto">
+                        <ul id="card-list" class="divide-y divide-slate-200 bg-white">
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center">
+                <button id="restore-defaults-btn" class="text-xs text-rose-600 hover:text-rose-700 font-medium">Reset Deck to Original CAPS Terms</button>
+                <button id="done-modal-btn" class="px-4 py-2 bg-slate-800 text-white hover:bg-slate-900 rounded-lg text-sm font-medium transition">Done</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Notification Toast Box -->
+    <div id="toast" class="fixed bottom-4 right-4 bg-slate-800 text-white px-4 py-3 rounded-xl shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2 z-50 pointer-events-none">
+        <i data-lucide="info" class="w-4 h-4 text-emerald-400"></i>
+        <span id="toast-message" class="text-sm">Notification</span>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        // Full Grade 12 CAPS Life Sciences Deck based on provided document
+        const DEFAULT_CARDS = [
+            // --- TOPIC 1: DNA: CODE OF LIFE ---
+            { id: 'dna-1', topic: 'DNA', term: 'Nucleotide', definition: 'The monomer (building block) which forms DNA and RNA.', mastered: false },
+            { id: 'dna-2', topic: 'DNA', term: 'DNA', definition: 'Deoxyribonucleic acid; nucleic acid made up of nucleotides that carries hereditary genetic information.', mastered: false },
+            { id: 'dna-3', topic: 'DNA', term: 'Nuclear DNA', definition: 'DNA found specifically within the nucleus of a cell.', mastered: false },
+            { id: 'dna-4', topic: 'DNA', term: 'Extra-nuclear DNA', definition: 'DNA found outside of the nucleus, such as mitochondrial DNA and chloroplastic DNA.', mastered: false },
+            { id: 'dna-5', topic: 'DNA', term: 'Double Helix', definition: 'The natural shape of a DNA molecule, consisting of two strands joined together and twisted spirally.', mastered: false },
+            { id: 'dna-6', topic: 'DNA', term: 'Hereditary', definition: 'Genetic information passed on from parent to offspring.', mastered: false },
+            { id: 'dna-7', topic: 'DNA', term: 'Rosalind Franklin & Maurice Wilkins', definition: 'Scientists who researched DNA structure using X-ray diffraction images.', mastered: false },
+            { id: 'dna-8', topic: 'DNA', term: 'Watson & Crick', definition: 'Scientists who proposed the famous 3D double helix model of DNA.', mastered: false },
+            { id: 'dna-9', topic: 'DNA', term: 'RNA', definition: 'Ribonucleic acid; single-stranded nucleic acid involved in protein synthesis.', mastered: false },
+            { id: 'dna-10', topic: 'DNA', term: 'Messenger RNA (mRNA)', definition: 'Carries the genetic code for protein synthesis from DNA in the nucleus to the ribosome.', mastered: false },
+            { id: 'dna-11', topic: 'DNA', term: 'Ribosomal RNA (rRNA)', definition: 'Forms the structure of ribosomes, which are the sites of protein synthesis.', mastered: false },
+            { id: 'dna-12', topic: 'DNA', term: 'Transfer RNA (tRNA)', definition: 'Brings specific amino acids to the ribosome to build a protein during translation.', mastered: false },
+            { id: 'dna-13', topic: 'DNA', term: 'Locations of RNA molecules', definition: 'Found in the nucleus (mRNA), ribosomes (rRNA), and cytoplasm/ribosomes (tRNA).', mastered: false },
+            { id: 'dna-14', topic: 'DNA', term: 'DNA Profiling', definition: 'The laboratory technique used to identify unique patterns of DNA fragments from a biological sample.', mastered: false },
+            { id: 'dna-15', topic: 'DNA', term: 'DNA Profile', definition: 'The unique pattern of DNA fragments generated for a specific individual (resembling a barcode).', mastered: false },
+            { id: 'dna-16', topic: 'DNA', term: 'DNA Replication', definition: 'The process through which a DNA molecule makes an exact identical copy of itself during interphase.', mastered: false },
+            { id: 'dna-17', topic: 'DNA', term: 'Transcription', definition: '1st stage of protein synthesis where mRNA is formed from DNA inside the nucleus, carrying the genetic code.', mastered: false },
+            { id: 'dna-18', topic: 'DNA', term: 'Translation', definition: '2nd stage of protein synthesis where amino acids brought by tRNA combine at the ribosome to form a protein.', mastered: false },
+            { id: 'dna-19', topic: 'DNA', term: 'Codon', definition: 'A sequence of three consecutive nitrogenous bases on mRNA that is complementary to a triplet on DNA.', mastered: false },
+            { id: 'dna-20', topic: 'DNA', term: 'Anti-codon', definition: 'A sequence of three consecutive nitrogenous bases on tRNA that is complementary to the codon on mRNA.', mastered: false },
+            { id: 'dna-21', topic: 'DNA', term: 'Gene Mutation', definition: 'A change in the nitrogenous base sequence of a DNA molecule.', mastered: false },
+
+            // --- TOPIC 2: MEIOSIS ---
+            { id: 'mei-1', topic: 'Meiosis', term: 'Meiosis', definition: 'A special type of cell division that halves the chromosome number, producing four genetically different haploid daughter cells from one diploid cell.', mastered: false },
+            { id: 'mei-2', topic: 'Meiosis', term: 'Chromosome', definition: 'A threadlike structure of DNA and protein found in the nucleus, carrying genetic information in the form of genes.', mastered: false },
+            { id: 'mei-3', topic: 'Meiosis', term: 'Chromatid', definition: 'One of the two identical strands of a replicated chromosome.', mastered: false },
+            { id: 'mei-4', topic: 'Meiosis', term: 'Centromere', definition: 'The region where two chromatids of a chromosome are held together.', mastered: false },
+            { id: 'mei-5', topic: 'Meiosis', term: 'Homologous Chromosomes', definition: 'A pair of chromosomes of the same shape, size, and gene positions for specific characteristics, one inherited from each parent.', mastered: false },
+            { id: 'mei-6', topic: 'Meiosis', term: 'Bivalent', definition: 'A pair of homologous chromosomes lying next to each other in physical contact where crossing over occurs.', mastered: false },
+            { id: 'mei-7', topic: 'Meiosis', term: 'Replicated Chromosome', definition: 'A chromosome consisting of two identical double-stranded DNA molecules (sister chromatids).', mastered: false },
+            { id: 'mei-8', topic: 'Meiosis', term: 'Interphase', definition: 'The growth phase in the cell cycle where DNA replication occurs prior to cell division.', mastered: false },
+            { id: 'mei-9', topic: 'Meiosis', term: 'Diploid (2n)', definition: 'Having two complete sets of chromosomes in a cell (e.g., 46 chromosomes in humans).', mastered: false },
+            { id: 'mei-10', topic: 'Meiosis', term: 'Haploid (n)', definition: 'Having one complete set of chromosomes in a cell (e.g., 23 chromosomes in human gametes).', mastered: false },
+            { id: 'mei-11', topic: 'Meiosis', term: 'Gene', definition: 'A segment of DNA on a chromosome that contains the code for a particular characteristic.', mastered: false },
+            { id: 'mei-12', topic: 'Meiosis', term: 'Centrosome', definition: 'Organelle (containing two centrioles) in animal cells that controls spindle fibers during cell division.', mastered: false },
+            { id: 'mei-13', topic: 'Meiosis', term: 'Centriole', definition: 'Structures formed when the centrosome divides and moves to opposite poles of the cell during division.', mastered: false },
+            { id: 'mei-14', topic: 'Meiosis', term: 'Crossing Over', definition: 'The exchange of genetic material between non-sister chromatids of homologous chromosomes during Prophase I.', mastered: false },
+            { id: 'mei-15', topic: 'Meiosis', term: 'Chiasma', definition: 'The point where two non-sister chromatids overlap and touch during crossing over.', mastered: false },
+            { id: 'mei-16', topic: 'Meiosis', term: 'Karyotype', definition: 'A visual representation showing the number, shape, and arrangement of a full set of chromosomes in a somatic cell nucleus.', mastered: false },
+            { id: 'mei-17', topic: 'Meiosis', term: 'Autosome', definition: 'The first 22 pairs of human chromosomes that control body appearance, structure, and general functions.', mastered: false },
+            { id: 'mei-18', topic: 'Meiosis', term: 'Gonosomes', definition: 'The pair of sex chromosomes (XX or XY) responsible for determining sex/gender.', mastered: false },
+            { id: 'mei-19', topic: 'Meiosis', term: 'Somatic Cells', definition: 'Diploid body cells excluding gametes.', mastered: false },
+            { id: 'mei-20', topic: 'Meiosis', term: 'Gametes', definition: 'Specialized haploid sex cells (sperm and egg) formed through meiosis.', mastered: false },
+            { id: 'mei-21', topic: 'Meiosis', term: 'Nondisjunction', definition: 'The failure of homologous chromosome pairs or sister chromatids to separate properly during meiosis.', mastered: false },
+            { id: 'mei-22', topic: 'Meiosis', term: 'Karyokinesis', definition: 'The division of the cell nucleus during cell division.', mastered: false },
+            { id: 'mei-23', topic: 'Meiosis', term: 'Cytokinesis', definition: 'The division of the cytoplasm of a cell to form separate daughter cells.', mastered: false },
+
+            // --- TOPIC 3: REPRODUCTIVE STRATEGIES IN VERTEBRATES ---
+            { id: 'rep-1', topic: 'Reproductive Strategies', term: 'Reproductive Strategy', definition: 'Structural, functional, and behavioral adaptations that improve the chances of fertilization and survival of offspring.', mastered: false },
+            { id: 'rep-2', topic: 'Reproductive Strategies', term: 'External Fertilization', definition: 'Fertilization that takes place outside the female body, usually in aquatic environments.', mastered: false },
+            { id: 'rep-3', topic: 'Reproductive Strategies', term: 'Internal Fertilization', definition: 'Fertilization occurring inside the female body after the male deposits sperm.', mastered: false },
+            { id: 'rep-4', topic: 'Reproductive Strategies', term: 'Ovipary', definition: 'Reproductive strategy where eggs are laid and the embryo develops outside the female body.', mastered: false },
+            { id: 'rep-5', topic: 'Reproductive Strategies', term: 'Ovovivipary', definition: 'Young develop in eggs fertilized internally and retained inside the mother until they hatch.', mastered: false },
+            { id: 'rep-6', topic: 'Reproductive Strategies', term: 'Vivipary', definition: 'Young develop inside the uterus of the mother after internal fertilization, receiving nutrients via a placenta.', mastered: false },
+            { id: 'rep-7', topic: 'Reproductive Strategies', term: 'Amniotic Egg', definition: 'Egg containing extra-embryonic membranes and a protective shell that allows development on land.', mastered: false },
+            { id: 'rep-8', topic: 'Reproductive Strategies', term: 'Extra-embryonic Membranes', definition: 'Membranes (amnion, allantois, chorion, yolk sac) surrounding and supporting the embryo in an egg or uterus.', mastered: false },
+            { id: 'rep-9', topic: 'Reproductive Strategies', term: 'Amnion', definition: 'Membrane producing amniotic fluid that cushions the embryo against mechanical injury, dehydration, and temperature changes.', mastered: false },
+            { id: 'rep-10', topic: 'Reproductive Strategies', term: 'Allantois', definition: 'Membrane that stores nitrogenous waste products and assists in gaseous exchange.', mastered: false },
+            { id: 'rep-11', topic: 'Reproductive Strategies', term: 'Chorion', definition: 'Membrane that allows gaseous exchange in amniotic eggs and forms the embryonic component of the placenta in mammals.', mastered: false },
+            { id: 'rep-12', topic: 'Reproductive Strategies', term: 'Yolk Sac', definition: 'Membrane containing nutrient food reserves for the developing embryo.', mastered: false },
+            { id: 'rep-13', topic: 'Reproductive Strategies', term: 'Precocial Development', definition: 'Hatchlings/young are well-developed, mobile, and able to feed themselves with open eyes, requiring minimal parental care.', mastered: false },
+            { id: 'rep-14', topic: 'Reproductive Strategies', term: 'Altricial Development', definition: 'Hatchlings/young are helpless, hairless/featherless, unable to move or feed themselves, requiring high parental care.', mastered: false },
+            { id: 'rep-15', topic: 'Reproductive Strategies', term: 'Parental Care', definition: 'Behaviors (nest building, guarding, feeding, teaching) that directly increase the survival chances of offspring.', mastered: false },
+
+            // --- TOPIC 4: HUMAN REPRODUCTION ---
+            { id: 'hum-1', topic: 'Human Reproduction', term: 'Gametogenesis', definition: 'The process in which haploid gametes are produced in the gonads (testes and ovaries) through meiosis.', mastered: false },
+            { id: 'hum-2', topic: 'Human Reproduction', term: 'Spermatogenesis', definition: 'The production of male gametes (sperm cells) in the seminiferous tubules of the testes through meiosis.', mastered: false },
+            { id: 'hum-3', topic: 'Human Reproduction', term: 'Oogenesis', definition: 'The process of forming mature female gametes (ova/egg cells) in the ovaries through meiosis.', mastered: false },
+            { id: 'hum-4', topic: 'Human Reproduction', term: 'Germinal Epithelium', definition: 'Cuboidal epithelial cells lining testes and ovaries that give rise to cells forming sperm and egg cells.', mastered: false },
+            { id: 'hum-5', topic: 'Human Reproduction', term: 'Accessory Glands', definition: 'Male reproductive glands (prostate gland, Cowper’s gland, seminal vesicles) that secrete fluids forming semen.', mastered: false },
+            { id: 'hum-6', topic: 'Human Reproduction', term: 'Testes', definition: 'Oval-shaped male gonads suspended in the scrotum that produce sperm cells and testosterone.', mastered: false },
+            { id: 'hum-7', topic: 'Human Reproduction', term: 'Scrotum', definition: 'Skin sac holding the testes outside the abdominal cavity at a temperature ~2°C lower than body temperature for optimal sperm production.', mastered: false },
+            { id: 'hum-8', topic: 'Human Reproduction', term: 'Epididymis', definition: 'Coiled tube that temporarily stores immature sperm cells until they mature and gain mobility.', mastered: false },
+            { id: 'hum-9', topic: 'Human Reproduction', term: 'Vas Deferens', definition: 'Muscular duct transporting mature sperm from the epididymis to the urethra.', mastered: false },
+            { id: 'hum-10', topic: 'Human Reproduction', term: 'Urethra', definition: 'Common duct transporting urine and semen out of the male body through the penis.', mastered: false },
+            { id: 'hum-11', topic: 'Human Reproduction', term: 'Prostate Gland', definition: 'Gland secreting a milky, alkaline fluid that nourishes sperm and enhances their motility.', mastered: false },
+            { id: 'hum-12', topic: 'Human Reproduction', term: 'Cowper’s Gland', definition: 'Gland producing a clear mucus that lubricates the urethra and helps smooth sperm passage.', mastered: false },
+            { id: 'hum-13', topic: 'Human Reproduction', term: 'Seminal Vesicles', definition: 'Glands producing a sugar-rich alkaline fluid providing energy to sperm and neutralizing vaginal acidity.', mastered: false },
+            { id: 'hum-14', topic: 'Human Reproduction', term: 'Seminiferous Tubules', definition: 'Microscopic tubules within the testes lined with germinal epithelium where sperm cells are produced.', mastered: false },
+            { id: 'hum-15', topic: 'Human Reproduction', term: 'Sertoli Cells', definition: 'Specialized cells within seminiferous tubules that nourish developing spermatids into mature sperm.', mastered: false },
+            { id: 'hum-16', topic: 'Human Reproduction', term: 'Testosterone', definition: 'Primary male hormone responsible for spermatogenesis and male secondary sexual characteristics.', mastered: false },
+            { id: 'hum-17', topic: 'Human Reproduction', term: 'Ovaries', definition: 'Female gonads that produce ova and secrete estrogen and progesterone.', mastered: false },
+            { id: 'hum-18', topic: 'Human Reproduction', term: 'Fallopian Tubes (Oviducts)', definition: 'Muscular tubes carrying ova from ovaries to the uterus; primary site of fertilization.', mastered: false },
+            { id: 'hum-19', topic: 'Human Reproduction', term: 'Uterus', definition: 'Hollow, muscular organ that houses, protects, and nourishes the developing embryo and foetus during pregnancy.', mastered: false },
+            { id: 'hum-20', topic: 'Human Reproduction', term: 'Endometrium', definition: 'Vascularized inner lining of the uterus wall; site of embryo implantation and placenta formation.', mastered: false },
+            { id: 'hum-21', topic: 'Human Reproduction', term: 'Cervix', definition: 'Narrow lower neck of the uterus that opens and dilates during childbirth.', mastered: false },
+            { id: 'hum-22', topic: 'Human Reproduction', term: 'Vagina', definition: 'Muscular canal receiving penis during intercourse, serving as birth canal and pathway for menstrual flow.', mastered: false },
+            { id: 'hum-23', topic: 'Human Reproduction', term: 'Vulva', definition: 'External female reproductive structures protecting vaginal opening.', mastered: false },
+            { id: 'hum-24', topic: 'Human Reproduction', term: 'Graafian Follicle', definition: 'Fluid-filled mature follicle inside the ovary containing a developing ovum.', mastered: false },
+            { id: 'hum-25', topic: 'Human Reproduction', term: 'Ovulation', definition: 'The release of a mature ovum from the ruptured Graafian follicle of an ovary.', mastered: false },
+            { id: 'hum-26', topic: 'Human Reproduction', term: 'Menstruation', definition: 'Monthly shedding of the blood-rich endometrial lining when fertilization does not occur.', mastered: false },
+            { id: 'hum-27', topic: 'Human Reproduction', term: 'Menopause', definition: 'Stage in a woman’s life (usually age 45-55) marking the permanent cessation of ovulation and menstruation.', mastered: false },
+            { id: 'hum-28', topic: 'Human Reproduction', term: 'Fertilization', definition: 'Fusion of the nucleus of a haploid sperm cell with the nucleus of a haploid egg cell to form a diploid zygote.', mastered: false },
+            { id: 'hum-29', topic: 'Human Reproduction', term: 'Implantation', definition: 'Process where the developing blastocyst attaches to and embeds in the endometrial lining of the uterus.', mastered: false },
+            { id: 'hum-30', topic: 'Human Reproduction', term: 'Ovarian Cycle', definition: 'Cyclic events in the ovary involving follicle development, ovulation, and corpus luteum formation.', mastered: false },
+            { id: 'hum-31', topic: 'Human Reproduction', term: 'Follicle Stimulating Hormone (FSH)', definition: 'Pituitary hormone stimulating primary follicle development into a Graafian follicle in ovaries.', mastered: false },
+            { id: 'hum-32', topic: 'Human Reproduction', term: 'Luteinising Hormone (LH)', definition: 'Pituitary hormone triggering ovulation and transforming the ruptured Graafian follicle into the corpus luteum.', mastered: false },
+            { id: 'hum-33', topic: 'Human Reproduction', term: 'Progesterone', definition: 'Hormone secreted by corpus luteum/placenta that thickens, maintains, and vascularizes the endometrium.', mastered: false },
+            { id: 'hum-34', topic: 'Human Reproduction', term: 'Oestrogen', definition: 'Hormone produced by developing follicles that repairs and thickens the endometrium after menstruation.', mastered: false },
+            { id: 'hum-35', topic: 'Human Reproduction', term: 'Negative Feedback Mechanism', definition: 'Hormonal interaction where an increase in one hormone suppresses another to maintain physiological balance.', mastered: false },
+            { id: 'hum-36', topic: 'Human Reproduction', term: 'Zygote', definition: 'Initial single diploid cell formed by the fusion of sperm and egg nuclei.', mastered: false },
+            { id: 'hum-37', topic: 'Human Reproduction', term: 'Morula', definition: 'Solid ball of cells resulting from early mitotic cleavages of a zygote.', mastered: false },
+            { id: 'hum-38', topic: 'Human Reproduction', term: 'Blastocyst', definition: 'Hollow ball of cells formed from the morula that embeds into the endometrium during implantation.', mastered: false },
+            { id: 'hum-39', topic: 'Human Reproduction', term: 'Ovum', definition: 'Mature haploid female reproductive gamete (egg cell).', mastered: false },
+            { id: 'hum-40', topic: 'Human Reproduction', term: 'Umbilical Cord', definition: 'Cord containing fetal blood vessels connecting the fetus to the placenta.', mastered: false },
+            { id: 'hum-41', topic: 'Human Reproduction', term: 'Placenta', definition: 'Organ connecting mother and fetus for gas exchange, nutrient delivery, waste removal, and hormone secretion.', mastered: false },
+            { id: 'hum-42', topic: 'Human Reproduction', term: 'Foetus', definition: 'Developing human offspring from 9 weeks after fertilization until birth.', mastered: false }
+        ];
+
+        // App State Variables
+        let cards = [];
+        let filteredCards = [];
+        let currentIndex = 0;
+        let isFlipped = false;
+
+        // UI DOM Elements
+        const flashcardContainer = document.getElementById('flashcard-container');
+        const flashcard = document.getElementById('flashcard');
+        const cardTerm = document.getElementById('card-term');
+        const cardDefinition = document.getElementById('card-definition');
+        const cardTopicTag = document.getElementById('card-topic-tag');
+        const cardCounter = document.getElementById('card-counter');
+        const cardStatusBadge = document.getElementById('card-status-badge');
+        
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const markMasteredBtn = document.getElementById('mark-mastered-btn');
+        const markPracticeBtn = document.getElementById('mark-practice-btn');
+        const shuffleBtn = document.getElementById('shuffle-btn');
+        const resetProgressBtn = document.getElementById('reset-progress-btn');
+        
+        const searchInput = document.getElementById('search-input');
+        const topicSelect = document.getElementById('topic-select');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        
+        const cardDisplayArea = document.getElementById('card-display-area');
+        const emptyState = document.getElementById('empty-state');
+        
+        const ttsFrontBtn = document.getElementById('tts-front-btn');
+        const ttsBackBtn = document.getElementById('tts-back-btn');
+
+        // Modal Elements
+        const manageBtn = document.getElementById('manage-btn');
+        const manageModal = document.getElementById('manage-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const doneModalBtn = document.getElementById('done-modal-btn');
+        const cardForm = document.getElementById('card-form');
+        const formTitle = document.getElementById('form-title');
+        const editCardId = document.getElementById('edit-card-id');
+        const inputTerm = document.getElementById('input-term');
+        const inputTopic = document.getElementById('input-topic');
+        const inputDefinition = document.getElementById('input-definition');
+        const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        const cardList = document.getElementById('card-list');
+        const totalCardCount = document.getElementById('total-card-count');
+        const restoreDefaultsBtn = document.getElementById('restore-defaults-btn');
+
+        // Toast Element
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toast-message');
+
+        // Initialize Application
+        window.addEventListener('DOMContentLoaded', () => {
+            loadCardsFromStorage();
+            applyFilters();
+            lucide.createIcons();
+            setupEventListeners();
+        });
+
+        // Load Cards from LocalStorage or use default set
+        function loadCardsFromStorage() {
+            const savedCards = localStorage.getItem('life_sciences_cards_v2');
+            if (savedCards) {
+                try {
+                    cards = JSON.parse(savedCards);
+                } catch (e) {
+                    cards = [...DEFAULT_CARDS];
+                }
+            } else {
+                cards = [...DEFAULT_CARDS];
+                saveCardsToStorage();
+            }
+        }
+
+        function saveCardsToStorage() {
+            localStorage.setItem('life_sciences_cards_v2', JSON.stringify(cards));
+        }
+
+        // Event Listeners Setup
+        function setupEventListeners() {
+            // Flip card on click
+            flashcardContainer.addEventListener('click', (e) => {
+                if (e.target.closest('#tts-front-btn') || e.target.closest('#tts-back-btn')) return;
+                toggleFlip();
+            });
+
+            // Navigation
+            prevBtn.addEventListener('click', () => navigateCard(-1));
+            nextBtn.addEventListener('click', () => navigateCard(1));
+
+            // Mastery Toggles
+            markMasteredBtn.addEventListener('click', () => setMasteryStatus(true));
+            markPracticeBtn.addEventListener('click', () => setMasteryStatus(false));
+
+            // Filters & Actions
+            searchInput.addEventListener('input', applyFilters);
+            topicSelect.addEventListener('change', applyFilters);
+            shuffleBtn.addEventListener('click', shuffleCurrentDeck);
+            resetProgressBtn.addEventListener('click', resetProgress);
+
+            // Speech Synthesis (Front = Definition, Back = Term)
+            ttsFrontBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (filteredCards[currentIndex]) speakText(filteredCards[currentIndex].definition);
+            });
+            ttsBackBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (filteredCards[currentIndex]) speakText(filteredCards[currentIndex].term);
+            });
+
+            // Keyboard Shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (!manageModal.classList.contains('hidden')) return;
+                
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    toggleFlip();
+                } else if (e.code === 'ArrowRight') {
+                    navigateCard(1);
+                } else if (e.code === 'ArrowLeft') {
+                    navigateCard(-1);
+                }
+            });
+        }
+
+        // Apply Search and Category Filters
+        function applyFilters() {
+            const query = searchInput.value.toLowerCase().trim();
+            const selectedTopic = topicSelect.value;
+
+            filteredCards = cards.filter(card => {
+                const matchesSearch = card.term.toLowerCase().includes(query) || card.definition.toLowerCase().includes(query);
+                const matchesTopic = selectedTopic === 'All' || card.topic === selectedTopic;
+                return matchesSearch && matchesTopic;
+            });
+
+            currentIndex = 0;
+            resetCardFlip();
+            updateCardDisplay();
+            updateOverallProgress();
+        }
+
+        // Update Card Display Details
+        function updateCardDisplay() {
+            if (filteredCards.length === 0) {
+                cardDisplayArea.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            cardDisplayArea.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+
+            const card = filteredCards[currentIndex];
+            cardTerm.textContent = card.term;
+            cardDefinition.textContent = card.definition;
+            cardTopicTag.textContent = card.topic;
+            cardCounter.textContent = `Card ${currentIndex + 1} of ${filteredCards.length}`;
+
+            // Mastery badge status
+            if (card.mastered) {
+                cardStatusBadge.textContent = 'Mastered';
+                cardStatusBadge.className = 'font-medium text-emerald-600 flex items-center gap-1';
+                cardStatusBadge.innerHTML = '<i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Mastered';
+            } else {
+                cardStatusBadge.textContent = 'Needs Practice';
+                cardStatusBadge.className = 'font-medium text-amber-600 flex items-center gap-1';
+                cardStatusBadge.innerHTML = '<i data-lucide="clock" class="w-3.5 h-3.5"></i> Needs Practice';
+            }
+
+            // Update navigation buttons
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = currentIndex === filteredCards.length - 1;
+
+            lucide.createIcons();
+        }
+
+        // Flip Card Animation Logic
+        function toggleFlip() {
+            isFlipped = !isFlipped;
+            if (isFlipped) {
+                flashcard.classList.add('rotate-y-180');
+            } else {
+                flashcard.classList.remove('rotate-y-180');
+            }
+        }
+
+        function resetCardFlip() {
+            isFlipped = false;
+            flashcard.classList.remove('rotate-y-180');
+        }
+
+        // Navigate through cards
+        function navigateCard(direction) {
+            const newIndex = currentIndex + direction;
+            if (newIndex >= 0 && newIndex < filteredCards.length) {
+                resetCardFlip();
+                setTimeout(() => {
+                    currentIndex = newIndex;
+                    updateCardDisplay();
+                }, 150);
+            }
+        }
+
+        // Mark Mastered or Practice
+        function setMasteryStatus(isMastered) {
+            if (filteredCards.length === 0) return;
+            
+            const currentCard = filteredCards[currentIndex];
+            const originalIndex = cards.findIndex(c => c.id === currentCard.id);
+            
+            if (originalIndex !== -1) {
+                cards[originalIndex].mastered = isMastered;
+                filteredCards[currentIndex].mastered = isMastered;
+                saveCardsToStorage();
+                updateCardDisplay();
+                updateOverallProgress();
+                
+                showToast(isMastered ? 'Marked as Mastered!' : 'Marked as Needs Practice');
+            }
+        }
+
+        // Progress Bar Calculation
+        function updateOverallProgress() {
+            const total = filteredCards.length;
+            if (total === 0) {
+                progressBar.style.width = '0%';
+                progressText.textContent = '0% (0 / 0 Mastered)';
+                return;
+            }
+
+            const masteredCount = filteredCards.filter(c => c.mastered).length;
+            const percentage = Math.round((masteredCount / total) * 100);
+
+            progressBar.style.width = `${percentage}%`;
+            progressText.textContent = `${percentage}% (${masteredCount} / ${total} Mastered)`;
+        }
+
+        // Shuffle Deck
+        function shuffleCurrentDeck() {
+            if (filteredCards.length <= 1) return;
+
+            for (let i = filteredCards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [filteredCards[i], filteredCards[j]] = [filteredCards[j], filteredCards[i]];
+            }
+
+            currentIndex = 0;
+            resetCardFlip();
+            updateCardDisplay();
+            showToast('Cards Shuffled!');
+        }
+
+        // Reset All Progress
+        function resetProgress() {
+            cards.forEach(c => c.mastered = false);
+            saveCardsToStorage();
+            applyFilters();
+            showToast('Mastery progress reset');
+        }
+
+        // Text-to-Speech Feature
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9;
+                utterance.pitch = 1.0;
+                window.speechSynthesis.speak(utterance);
+            } else {
+                showToast('Text-to-speech not supported on this browser');
+            }
+        }
+
+        // Toast Notification System
+        function showToast(message) {
+            toastMessage.textContent = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2500);
+        }
+
+        // Manage Modal Operations
+        function openModal() {
+            renderModalCardList();
+            manageModal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            manageModal.classList.add('hidden');
+            resetForm();
+            applyFilters();
+        }
+
+        function renderModalCardList() {
+            totalCardCount.textContent = cards.length;
+            cardList.innerHTML = '';
+
+            cards.forEach((card) => {
+                const li = document.createElement('li');
+                li.className = 'p-3 flex justify-between items-center hover:bg-slate-50 transition';
+                li.innerHTML = `
+                    <div class="pr-4 overflow-hidden">
+                        <div class="flex items-center gap-2">
+                            <span class="font-semibold text-slate-800 text-sm truncate">${card.term}</span>
+                            <span class="px-2 py-0.5 text-[10px] bg-slate-100 text-slate-600 rounded-full border border-slate-200">${card.topic}</span>
+                        </div>
+                        <p class="text-xs text-slate-500 truncate max-w-sm mt-0.5">${card.definition}</p>
+                    </div>
+                    <div class="flex items-center gap-1 shrink-0">
+                        <button onclick="editCard('${card.id}')" class="p-1.5 text-slate-500 hover:text-emerald-600 rounded hover:bg-slate-100 transition" title="Edit">
+                            <i data-lucide="edit-2" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="deleteCard('${card.id}')" class="p-1.5 text-slate-500 hover:text-rose-600 rounded hover:bg-slate-100 transition" title="Delete">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                `;
+                cardList.appendChild(li);
+            });
+
+            lucide.createIcons();
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const term = inputTerm.value.trim();
+            const topic = inputTopic.value;
+            const definition = inputDefinition.value.trim();
+            const cardId = editCardId.value;
+
+            if (!term || !definition) return;
+
+            if (cardId) {
+                const index = cards.findIndex(c => c.id === cardId);
+                if (index !== -1) {
+                    cards[index] = { ...cards[index], term, topic, definition };
+                    showToast('Card updated successfully!');
+                }
+            } else {
+                const newCard = {
+                    id: Date.now().toString(),
+                    term,
+                    topic,
+                    definition,
+                    mastered: false
+                };
+                cards.push(newCard);
+                showToast('New card added!');
+            }
+
+            saveCardsToStorage();
+            resetForm();
+            renderModalCardList();
+        }
+
+        window.editCard = function(id) {
+            const card = cards.find(c => c.id === id);
+            if (card) {
+                editCardId.value = card.id;
+                inputTerm.value = card.term;
+                inputTopic.value = card.topic;
+                inputDefinition.value = card.definition;
+
+                formTitle.textContent = 'Edit Flashcard';
+                cancelEditBtn.classList.remove('hidden');
+            }
+        };
+
+        window.deleteCard = function(id) {
+            cards = cards.filter(c => c.id !== id);
+            saveCardsToStorage();
+            renderModalCardList();
+            showToast('Card deleted');
+        };
+
+        function resetForm() {
+            editCardId.value = '';
+            inputTerm.value = '';
+            inputDefinition.value = '';
+            inputTopic.value = 'DNA';
+            formTitle.textContent = 'Add New Flashcard';
+            cancelEditBtn.classList.add('hidden');
+        }
+
+        function restoreDefaults() {
+            cards = [...DEFAULT_CARDS];
+            saveCardsToStorage();
+            renderModalCardList();
+            showToast('Deck restored to original CAPS terms');
+        }
+    </script>
+</body>
+</html>
